@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth.Letter PDF Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        form {
+            max-width: 680px;
+            margin: auto;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input, select, button {
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input, select {
+            width: calc(100% - 22px); /* Subtract padding from width */
+        }
+
+        #todayDateBtn {
+            color: rgb(255, 255, 255);
+            padding: 8px 15px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #yesterdayDateBtn {
+            color: rgb(255, 255, 255);
+            padding: 8px 15px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #twodaysbeforeDateBtn {
+            color: rgb(255, 255, 255);
+            padding: 8px 15px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button {
+            background: #007BFF;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        button#clearBtn {
+            background: #FF6B6B;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        .button-group button {
+            flex: 1;
+        }
+        .alert {
+            margin-top: 20px;
+            padding: 15px;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            border-radius: 5px;
+            display: none;
+            opacity: 0;
+            transition: opacity 1.6s ease-out;
+        }
+        .alert-success {
+            background-color: #28a745;
+        }
+        .date-field-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .date-field-group input {
+            flex: 1;
+            font-size: 15px;
+        }
+        .date-field-group button {
+            padding: 8px 12px;
+            font-size: 14px;
+            background: #6c757d;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Authorization Letter PDF Generator</h1>
+    <form id="form">
+        <div class="date-field-group">
+            <label for="date">Date:</label>
+            <input type="date" id="date" required>
+            <button type="button" id="todayDateBtn">Today Date</button>
+            <button type="button" id="yesterdayDateBtn">Yesterday Date</button>
+            <button type="button" id="twodaysbeforeDateBtn">2 Days Ago</button>
+        </div>
+		<br>
+		
+		<div style="display: flex; gap: 18px;>
+			<label for="carPlateNumber">Plate Number:</label>
+			<input type="text" id="carPlateNumber" placeholder="Enter Plate Number" required>
+			
+			<label for="insuranceCompany">Insurance Company:</label>
+			<select id="insuranceCompany" required style="font-size: 16px; background-color: rgb(254, 255, 218);">
+				<option value="Etiqa">Etiqa</option>
+				<option value="TakafulIkhlas">Takaful Ikhlas</option>
+				<option value="SyarikatTakaful">Syarikat Takaful</option>
+				<option value="TokioMarine">Tokio Marine</option>
+				<option value="Zurich1">Zurich (Insurance)</option>
+				<option value="Zurich2">Zurich (Takaful)</option>
+				<option value="PacificInsurance">Pacific Insurance</option>
+				<option value="P&O">Pacific & Orient Insurance</option>
+				<option value="Generali">Generali Insurance</option>
+				<option value="Progressive">Progressive Insurance</option>
+				<option value="TuneProtect">TUNE PROTECT</option>
+			</select>
+		</div>
+
+        <label for="customerName">Name:</label>
+        <input type="text" id="customerName" placeholder="Enter Name" required>
+
+        <label for="customerIC">IC:</label>
+        <input type="text" id="customerIC" placeholder="Enter IC" required oninput="formatIC()">
+
+        <label for="customerAddress">Address:</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="customerAddress1" placeholder="Enter Address Line 1" required;>
+            <input type="text" id="customerAddress2" placeholder="Enter Address Line 2" required >
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="customerPostcode" placeholder="Enter Postcode" required >
+            <input type="text" id="customerCity" placeholder="Enter City" required >
+        </div>
+
+        <label for="customerState">State:</label>
+        <select id="customerState" required>
+            <option value="Kedah">Kedah</option>
+            <option value="Pulau Pinang">Pulau Pinang</option>
+            <option value="Kelantan">Kelantan</option>
+            <option value="Melaka">Melaka</option>
+            <option value="Negeri Sembilan">Negeri Sembilan</option>
+            <option value="Pahang">Pahang</option>
+            <option value="Johor">Johor</option>
+            <option value="Perak">Perak</option>
+            <option value="Perlis">Perlis</option>
+            <option value="Sabah">Sabah</option>
+            <option value="Sarawak">Sarawak</option>
+            <option value="Selangor">Selangor</option>
+            <option value="Terengganu">Terengganu</option>
+            <option value="Kuala Lumpur">Kuala Lumpur</option>
+            <option value="Labuan">Labuan</option>
+            <option value="Putrajaya">Putrajaya</option>
+        </select>
+
+        <div class="button-group">
+                <button type="button" id="generateBtn">Generate PDF</button>
+                <button type="button" id="clearBtn">Clear</button>
+        </div>
+    </form>
+
+    <div id="successMessage" class="alert alert-success"></div>
+
+    <script>
+        document.getElementById('generateBtn').addEventListener('click', function () {
+            const date = document.getElementById('date').value;
+            const dateDDMMYYYY = formatDate(date); // Modify the date format to dd/mm/yyyy
+
+            const carPlateNumber = document.getElementById('carPlateNumber').value.toUpperCase();
+            const customerName = document.getElementById('customerName').value.toUpperCase();
+            const customerIC = document.getElementById('customerIC').value;
+            const address1 = document.getElementById('customerAddress1').value;
+            const address2 = document.getElementById('customerAddress2').value;
+            const postcode = document.getElementById('customerPostcode').value;
+            const city = document.getElementById('customerCity').value;
+            const state = document.getElementById('customerState').value;
+
+            // Insurance Company Address and First Line Name
+            const InsCompanyaddress = getInsAddress(insuranceCompany);
+
+            // Validate inputs
+            if (!date) {
+                alert("Please fill in Date.");
+                return;
+            }
+
+            if (!carPlateNumber || !customerName || !customerIC || !address1 || !address2 || !postcode || !city || !state) {
+                alert("Please fill out all necessary fields.");
+                return;
+            }
+
+            // Validate Plate Number
+            if (!/^\w+$/.test(carPlateNumber)) {
+                alert("Invalid Plate Number");
+                return;
+            }
+
+            if (customerIC.length !==14 ) {
+                alert("The IC seems to be incorrect. Please check the IC.");
+                console.log(customerIC)
+                return;
+            }
+
+            // PDF Template Content
+            const contentTop = `
+${dateDDMMYYYY}
+
+${customerName} 
+${address1}, 
+${address2}, 
+${postcode} ${city},
+${state}
+`;
+
+            const contentInsCompany = `
+${InsCompanyaddress}
+`;
+
+            const contentBold = `\n\nPER: Surat Kebenaran
+         No Kenderaan :    ${carPlateNumber}`;
+
+            const contentBottom = `
+
+
+__________________________________________________________________
+
+Saya, ${customerName} ( No K/P : ${customerIC} ) di sini membenarkan Pihak Tuan ( ${getInsAddressFirstLine(InsCompanyaddress)} ) membayar balik tuntutan pampasan kepada Lee Wind Screen Specialist Enterprise.
+
+Sekian Terima Kasih.
+
+
+
+
+
+
+
+Yang Benar,
+
+
+
+_______________________
+Name : ${customerName}
+No K/P : ${customerIC}
+`;
+
+            // Generate PDF
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                format: "letter", // Letter size
+                unit: "pt", // Points
+                margins: { left: 75, right: 75 } // Added right margin same as left
+            });
+
+            // Set margins and starting point
+            let y = 75; // Top margin
+
+            pdf.setFont("Helvetica", "normal");
+            pdf.setFontSize(12);
+
+            // Add the top content
+            pdf.text(contentTop, 75, y);
+            y += 120; // Move down for the next section
+			
+			pdf.text(contentInsCompany, 75, y);
+            y += 140; // Move down for the next section
+			
+            // Add bold text for the "PER: Surat Kebenaran"
+            pdf.setFont("Helvetica", "bold");
+            pdf.text(contentBold, 75, y);
+            y += 15; // Move down for the next section
+
+            // Add the remaining content with text wrapping
+            pdf.setFont("Helvetica", "normal");
+            const maxLineWidth = 500; // Max width of text area
+            let lines = pdf.splitTextToSize(contentBottom, maxLineWidth);
+            pdf.text(lines, 75, y);
+
+            // Define PDF name
+            const pdfName = `${carPlateNumber} Authorize Letter.pdf`;
+
+            // Save PDF
+            pdf.save(pdfName);
+
+            // Show success message
+            const successMessage = document.getElementById('successMessage');
+            successMessage.textContent = `Your PDF "${pdfName}" is generated successfully.`;
+            successMessage.style.display = 'block';
+            successMessage.style.opacity = 1; // Make it visible
+
+            // Gradually fade out after 1.5 seconds
+            setTimeout(() => {
+                successMessage.style.opacity = 0; // Start fading
+                setTimeout(() => {
+                    successMessage.style.display = 'none'; // Hide completely after fade-out
+                }, 1800); // Wait for the fade-out transition to complete (1.8 seconds)
+            }, 1500); // Wait for 1.5 seconds before fading
+
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', function () {
+            document.getElementById('form').reset();
+            const successMessage = document.getElementById('successMessage');
+            successMessage.style.display = 'none';
+            successMessage.style.opacity = 1; // Reset opacity for next time
+        });
+
+        document.getElementById('todayDateBtn').addEventListener('click', function () {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            document.getElementById('date').value = `${yyyy}-${mm}-${dd}`;//Correct format which can be accept by <input type="date"> element.
+        });
+
+        document.getElementById('yesterdayDateBtn').addEventListener('click', function () {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1); // Subtract one day to get yesterday's date
+            const yyyy = yesterday.getFullYear();
+            const mm = String(yesterday.getMonth() + 1).padStart(2, '0');
+            const dd = String(yesterday.getDate()).padStart(2, '0');
+            document.getElementById('date').value = `${yyyy}-${mm}-${dd}`;//Correct format which can be accept by <input type="date"> element.
+        });
+
+        document.getElementById('twodaysbeforeDateBtn').addEventListener('click', function () {
+            const twodaysago = new Date();
+            twodaysago.setDate(twodaysago.getDate() - 2); // Subtract 2 days
+            const yyyy = twodaysago.getFullYear();
+            const mm = String(twodaysago.getMonth() + 1).padStart(2, '0');
+            const dd = String(twodaysago.getDate()).padStart(2, '0');
+            document.getElementById('date').value = `${yyyy}-${mm}-${dd}`;//Correct format which can be accept by <input type="date"> element.
+        });
+
+        function formatDate(date) {
+            const parts = date.split('-');
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
+	
+		function formatIC() {
+			var icField = document.getElementById("customerIC");
+			var value = icField.value.replace(/\D/g, '');  // Remove all non-digit characters
+
+			// Format to the pattern 123456-78-9012
+			if (value.length > 6) {
+				value = value.substring(0, 6) + '-' + value.substring(6);
+			}
+			if (value.length > 9) {
+				value = value.substring(0, 9) + '-' + value.substring(9);
+			}
+
+		icField.value = value.substring(0, 14);  // Limit to 14 characters (for the format)
+		}
+		
+		// Function for selecting Insurance Company.
+		function getInsAddress(insuranceCompany) {
+			const addresses = {
+				Etiqa: `
+Kepada :
+
+Etiqa General Takaful Berhad
+Dataran Maybank
+No 1, Jalan Maarof
+59000 Kuala Lumpur
+				`,
+				TakafulIkhlas: `
+Kepada :
+
+Takaful Ikhlas General Berhad
+Ikhlas Point, Tower 11A, Avenue 5 
+Bangsar South
+No 8 Jalan Kerinchi
+59200 Kuala Lumpur 
+				`,
+				SyarikatTakaful: `
+Kepada :
+
+Syarikat Takaful Malaysia Am Berhad
+14 Floor, Annexe Block
+Tower 11A, Avenue 5 
+Menara Takaful Malaysia
+No 4 Jalan Sultan Sulaiman
+50000 Kuala Lumpur
+				`,
+				TokioMarine: `
+Kepada :
+
+Tokio Marine Insurans (Malaysia) Berhad
+Level 20, Menara Hap Seng 3
+Plaza Hap Seng
+No 1, Jalan P. Ramlee
+50250 Kuala Lumpur
+				`,
+				Zurich1: `
+Kepada :
+
+Zurich General Insurance Malaysia Berhad
+Level 23A Mercu 3
+No 3 Jalan Bangsar
+KL Eco City
+59200 Kuala Lumpur
+				`,
+				Zurich2: `
+Kepada :
+
+Zurich General Takaful Malaysia Berhad
+Level 23A, Mercu 3
+No 3 Jalan Bangsar, KL Eco City
+59200 Kuala Lumpur
+				`,
+				PacificInsurance: `
+Kepada :
+
+The Pacific Insurance Berhad
+40-01, Q-Sentral,
+2A Jalan Stesen Sentral 2,
+Kuala Lumpur Sentral,
+50470 Kuala Lumpur
+				`,
+				Generali: `
+Kepada :
+
+Generali Insurance Malaysia Berhad
+8th floor, Menara Multi-Purpose, 
+Capital Square, 8 Jalan Munshi Abdullah,
+50100 Kuala Lumpur
+				`,
+				'P&O': `
+Kepada :
+
+Pacific & Orient Insurance Co. Berhad
+11th Floor, Wisma Bumi Raya,
+10, Jalan Raja Laut,
+50350 Kuala Lumpur
+				`,
+				Progressive: `
+Kepada :
+
+Progressive Insurance Berhad
+6th, 9th & 1Oth Floor,
+Menara Cosway Plaza Berjaya,
+No.12, Jalan Imbi,
+55100 Kuala Lumpur
+				`,
+				TuneProtect: `
+Kepada :
+
+Tune Insurance Malaysia Berhad
+Level 9, Wisma Capital A,
+19, Lorong Dungun, Damansara Heights, 
+50490 Kuala Lumpur
+				`
+			};
+
+			return addresses[insuranceCompany.value] || 'Insurance company not recognized.';
+		}
+        
+        function getInsAddressFirstLine( InsCompanyaddress ) {
+            return InsCompanyaddress.trim().split("\n")[2] || "";
+        }
+	
+
+    </script>
+
+<footer style="margin-top: 22px; padding: 10px; background-color: #f1f1f1; text-align: center; font-size: 11px;">
+    <p>Prepared by Jing Xuan.</p>
+    <p>（Latest update: 25 Feb 2025）Need any customization? Feel free to contact me.</p>
+</footer>
+
+</body>
+</html>
