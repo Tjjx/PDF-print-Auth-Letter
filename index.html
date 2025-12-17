@@ -28,6 +28,12 @@
             width: calc(100% - 22px); /* Subtract padding from width */
         }
 
+        #otherCustomerStateDiv label {
+            font-size: 82%;
+            font-style: italic;
+        }
+        
+
         #todayDateBtn {
             color: rgb(255, 255, 255);
             padding: 8px 15px;
@@ -167,7 +173,13 @@
             <option value="Kuala Lumpur">Kuala Lumpur</option>
             <option value="Labuan">Labuan</option>
             <option value="Putrajaya">Putrajaya</option>
+            <option value="Others">Others...</option>
         </select>
+
+        <div id="otherCustomerStateDiv"  style="display: none;">
+            <label for="customerOtherState">Please specify the State:</label>
+            <input type="text" id="customerOtherState" placeholder="Enter your state">
+        </div>
 
         <div class="button-group">
                 <button type="button" id="generateBtn">Generate PDF</button>
@@ -178,6 +190,29 @@
     <div id="successMessage" class="alert alert-success"></div>
 
     <script>
+        function handleStateChange() {
+            const customerState_DropDown_selection = document.getElementById('customerState');
+            const otherCustomerStateDiv = document.getElementById('otherCustomerStateDiv');
+            const customerOtherState_Text = document.getElementById('customerOtherState');
+            
+            if (customerState_DropDown_selection.value === 'Others') {
+                otherCustomerStateDiv.style.display = 'block';
+                customerOtherState_Text.required = true;
+                otherInput.value = '';
+            } else {
+                otherCustomerStateDiv.style.display = 'none';
+                customerOtherState_Text.required = false;
+                otherInput.value = '';
+            }
+        }
+
+        // Add event listener which reflect values of States
+        document.getElementById('customerState').addEventListener('change', handleStateChange);
+
+        // Call on page load to handle browser autofill/refresh (if not add this, after refresh, the customerOtherState will missing while State is still Others...)
+        window.addEventListener('DOMContentLoaded', handleStateChange);
+
+
         document.getElementById('generateBtn').addEventListener('click', function () {
             const date = document.getElementById('date').value;
             const dateDDMMYYYY = formatDate(date); // Modify the date format to dd/mm/yyyy
@@ -189,7 +224,8 @@
             const address2 = document.getElementById('customerAddress2').value;
             const postcode = document.getElementById('customerPostcode').value;
             const city = document.getElementById('customerCity').value;
-            const state = document.getElementById('customerState').value;
+            let state = document.getElementById('customerState').value;
+            const other_state = document.getElementById('customerOtherState').value;
 
             // Insurance Company Address and First Line Name
             const InsCompanyaddress = getInsAddress(insuranceCompany);
@@ -215,6 +251,15 @@
                 alert("The IC seems to be incorrect. Please check the IC.");
                 console.log(customerIC)
                 return;
+            }
+
+            if (state === "Others" && other_state === "") {
+                alert("Your \"Please specify the State:\" value is empty.");
+                return;
+            }
+
+            if (state === "Others" && other_state !== "") {
+                state = other_state;
             }
 
             // PDF Template Content
@@ -315,6 +360,7 @@ No K/P : ${customerIC}
 
         document.getElementById('clearBtn').addEventListener('click', function () {
             document.getElementById('form').reset();
+            handleStateChange(); 
             const successMessage = document.getElementById('successMessage');
             successMessage.style.display = 'none';
             successMessage.style.opacity = 1; // Reset opacity for next time
