@@ -65,6 +65,9 @@
             cursor: pointer;
             margin-top: 5px;
         }
+        button#printBtn {
+            background: #219bc4;
+        }
         button#clearBtn {
             background: #FF6B6B;
         }
@@ -183,6 +186,7 @@
 
         <div class="button-group">
                 <button type="button" id="generateBtn">Generate PDF</button>
+                <button type="button" id="printBtn">Print PDF</button>
                 <button type="button" id="clearBtn">Clear</button>
         </div>
     </form>
@@ -211,9 +215,23 @@
 
         // Call on page load to handle browser autofill/refresh (if not add this, after refresh, the customerOtherState will missing while State is still Others...)
         window.addEventListener('DOMContentLoaded', handleStateChange);
+    
 
+        // Event listeners which will download/save the PDF. 
+        const generate_PDF_btn = document.getElementById('generateBtn');
+        generate_PDF_btn.addEventListener('click', function () {
+            generatePDF_action(action = 'download');
+        });
 
-        document.getElementById('generateBtn').addEventListener('click', function () {
+        // Event listeners which will print the PDF.
+        const print_PDF_btn = document.getElementById('printBtn');
+        print_PDF_btn.addEventListener('click', function () {
+            generatePDF_action(action = 'print');
+        });
+
+        // Function to do the main operation -- generate then download/print the PDF.
+        function generatePDF_action(action ='download'){
+
             const date = document.getElementById('date').value;
             const dateDDMMYYYY = formatDate(date); // Modify the date format to dd/mm/yyyy
 
@@ -339,24 +357,55 @@ No K/P : ${customerIC}
             // Define PDF name
             const pdfName = `${carPlateNumber} Authorize Letter.pdf`;
 
-            // Save PDF
-            pdf.save(pdfName);
+            if (action === 'download'){
+            // Operation to Download the PDF (Also, the default parameter for this function).
 
-            // Show success message
-            const successMessage = document.getElementById('successMessage');
-            successMessage.textContent = `Your PDF "${pdfName}" is generated successfully.`;
-            successMessage.style.display = 'block';
-            successMessage.style.opacity = 1; // Make it visible
+                // Download and save the PDF.
+                pdf.save(pdfName);
 
-            // Gradually fade out after 1.5 seconds
-            setTimeout(() => {
-                successMessage.style.opacity = 0; // Start fading
+                // Show success message
+                const successMessage = document.getElementById('successMessage');
+                successMessage.textContent = `Your PDF "${pdfName}" is generated successfully.`;
+                successMessage.style.display = 'block';
+                successMessage.style.opacity = 1; // Make it visible
+
+                // Gradually fade out after 1.5 seconds
                 setTimeout(() => {
-                    successMessage.style.display = 'none'; // Hide completely after fade-out
-                }, 1800); // Wait for the fade-out transition to complete (1.8 seconds)
-            }, 1500); // Wait for 1.5 seconds before fading
+                    successMessage.style.opacity = 0; // Start fading
+                    setTimeout(() => {
+                        successMessage.style.display = 'none'; // Hide completely after fade-out
+                    }, 1800); // Wait for the fade-out transition to complete (1.8 seconds)
+                }, 1500); // Wait for 1.5 seconds before fading                
 
-        });
+
+            } else if (action === 'print') { 
+            // Operation to Print the PDF.
+
+                // Set the PDF Document title (so when printing, browsers use the PDF's internal metadata "Title" as the name of the browser tab.)
+                pdf.setProperties({
+                    title: `Print: "${pdfName}"`
+                });    
+
+                // Print the PDF.
+                pdf.autoPrint();
+                window.open(pdf.output('bloburl'), '_blank');
+
+                // Show success message
+                const successMessage = document.getElementById('successMessage');
+                successMessage.textContent = `Open Printing Page...`;
+                successMessage.style.display = 'block';
+                successMessage.style.opacity = 1; // Make it visible
+
+                // Gradually fade out after 1.5 seconds
+                setTimeout(() => {
+                    successMessage.style.opacity = 0; // Start fading
+                    setTimeout(() => {
+                        successMessage.style.display = 'none'; // Hide completely after fade-out
+                    }, 1800); // Wait for the fade-out transition to complete (1.8 seconds)
+                }, 1500); // Wait for 1.5 seconds before fading                       
+
+            }
+        }
 
         document.getElementById('clearBtn').addEventListener('click', function () {
             document.getElementById('form').reset();
@@ -520,12 +569,11 @@ Level 9, Wisma Capital A,
             return InsCompanyaddress.trim().split("\n")[2] || "";
         }
 	
-
     </script>
 
 <footer style="margin-top: 22px; padding: 10px; background-color: #f1f1f1; text-align: center; font-size: 11px;">
     <p>Prepared by Jing Xuan.</p>
-    <p>（Latest update: 20 Dec 2025）Need any customization? Feel free to contact me.</p>
+    <p>（Latest update: 21 Dec 2025）Need any customization? Feel free to contact me.</p>
 </footer>
 
 </body>
